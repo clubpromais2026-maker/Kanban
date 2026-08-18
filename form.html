@@ -178,19 +178,17 @@
     };
 
     try{
-      const res = await fetch(API_URL, {
+      await fetch(API_URL, {
         method: 'POST',
+        mode: 'no-cors',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify(payload)
       });
-      const data = await res.json();
-      if(data.ok){
-        document.getElementById('leadForm').style.display = 'none';
-        document.getElementById('success').style.display = 'block';
-      } else {
-        msg.textContent = 'Erro ao enviar. Tente novamente.';
-        msg.className = 'msg err';
-      }
+      // O Google Apps Script bloqueia a leitura da resposta por CORS mesmo
+      // quando grava certinho, por isso usamos "no-cors" e assumimos sucesso
+      // se o envio não deu erro de rede.
+      document.getElementById('leadForm').style.display = 'none';
+      document.getElementById('success').style.display = 'block';
     }catch(err){
       msg.textContent = 'Sem conexão com a planilha. Confira a internet.';
       msg.className = 'msg err';
