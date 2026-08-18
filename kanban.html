@@ -108,6 +108,17 @@
     width:44px; background:var(--surface-3); border:1px solid var(--border); border-radius:6px;
     color:var(--text); font-size:12px; padding:3px 5px; text-align:center;
   }
+  .meta-contatos{
+    display:flex; flex-direction:column; gap:5px; margin-top:10px; padding-top:10px;
+    border-top:1px solid var(--border);
+  }
+  .meta-contato-row{ display:flex; align-items:center; justify-content:space-between; font-size:11.5px; }
+  .meta-contato-row .rotulo{ display:flex; align-items:center; gap:5px; color:var(--text-muted); }
+  .meta-contato-row .ponto{ width:6px; height:6px; border-radius:50%; }
+  .meta-contato-row input{
+    width:38px; background:var(--surface-3); border:1px solid var(--border); border-radius:6px;
+    color:var(--text); font-size:11.5px; padding:2px 4px; text-align:center;
+  }
   .venda-fechada{
     margin-top:8px; background:rgba(53,196,143,.1); border:1px solid rgba(53,196,143,.35);
     border-radius:8px; padding:8px 10px;
@@ -239,7 +250,7 @@
 
 <script>
   // ⚠️ Cole aqui a URL do seu Apps Script (a mesma usada no form.html)
-  const API_URL = 'https://script.google.com/macros/s/AKfycbxy2UkVTb7zH1IuPMGlJsCO4Hcm_pxZPuThrygGnBMMg4NjAW6HtRDl4umZudMDZ-KF6g/exec';
+  const API_URL = 'https://script.google.com/macros/s/AKfycbwL8DYmlZm071enbEfgcIVPnOCxXkhHkNAUZCviPqXq7p0ugLh4ZG4Q21vtxOTEmsWtgA/exec';
 
   // ⚠️ Troque por uma senha só sua. Isso NÃO é uma segurança forte (é só
   // JavaScript rodando no navegador), mas impede que quem só tenha o link
@@ -326,12 +337,29 @@
           <div class="meta-foot">
             <span>${capturadosHoje} / <input type="number" min="0" class="meta-input" data-nome="${escapeHtml(c.nome)}" value="${meta}"> hoje</span>
           </div>
+          <div class="meta-contatos">
+            <div class="meta-contato-row">
+              <span class="rotulo"><span class="ponto" style="background:#35c48f"></span>Responderam</span>
+              <input type="number" min="0" class="contagem-input" data-nome="${escapeHtml(c.nome)}" data-campo="responderam" value="${c.responderam || 0}">
+            </div>
+            <div class="meta-contato-row">
+              <span class="rotulo"><span class="ponto" style="background:#ffb020"></span>Não responderam</span>
+              <input type="number" min="0" class="contagem-input" data-nome="${escapeHtml(c.nome)}" data-campo="naoResponderam" value="${c.naoResponderam || 0}">
+            </div>
+            <div class="meta-contato-row">
+              <span class="rotulo"><span class="ponto" style="background:#ff5d5d"></span>Números inválidos</span>
+              <input type="number" min="0" class="contagem-input" data-nome="${escapeHtml(c.nome)}" data-campo="invalidos" value="${c.invalidos || 0}">
+            </div>
+          </div>
         </div>
       `;
     }).join('');
 
     wrap.querySelectorAll('.meta-input').forEach(inp => {
       inp.addEventListener('change', (e) => atualizarMeta(e.target.dataset.nome, e.target.value));
+    });
+    wrap.querySelectorAll('.contagem-input').forEach(inp => {
+      inp.addEventListener('change', (e) => atualizarContagem(e.target.dataset.nome, e.target.dataset.campo, e.target.value));
     });
   }
 
@@ -345,6 +373,20 @@
         mode:'no-cors',
         headers:{'Content-Type':'text/plain;charset=utf-8'},
         body: JSON.stringify({ action:'atualizarMeta', nome, meta: Number(meta) || 0 })
+      });
+    }catch(e){}
+  }
+
+  async function atualizarContagem(nome, campo, valor){
+    const c = captadoresData.find(c => c.nome === nome);
+    if(c) c[campo] = Number(valor) || 0;
+    renderMetas();
+    try{
+      await fetch(API_URL, {
+        method:'POST',
+        mode:'no-cors',
+        headers:{'Content-Type':'text/plain;charset=utf-8'},
+        body: JSON.stringify({ action:'atualizarContagem', nome, campo, valor: Number(valor) || 0 })
       });
     }catch(e){}
   }
