@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Captação de Lead</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0f131a; --surface:#171d27; --surface-2:#1f2733;
+    --accent:#ffb020; --accent-dark:#c9860a; --border:#2a3340;
+    --text:#eef1f5; --text-muted:#8b94a3;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; min-height:100vh; background:var(--bg); color:var(--text);
+    font-family:'Inter',sans-serif;
+    display:flex; align-items:center; justify-content:center; padding:24px;
+  }
+  .card{
+    width:100%; max-width:440px; background:var(--surface);
+    border:1px solid var(--border); border-radius:16px; padding:28px 24px 32px;
+    position:relative; overflow:hidden;
+  }
+  .card::before{
+    content:''; position:absolute; top:0; left:0; right:0; height:4px;
+    background:linear-gradient(90deg,var(--accent),var(--accent-dark));
+  }
+  .eyebrow{
+    font-size:12px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--accent); font-weight:600; margin:8px 0 4px;
+  }
+  h1{
+    font-family:'Space Grotesk',sans-serif; font-size:26px; margin:0 0 6px;
+    letter-spacing:-.01em;
+  }
+  p.sub{ color:var(--text-muted); font-size:14px; margin:0 0 26px; }
+  label{
+    display:block; font-size:13px; font-weight:600; color:var(--text-muted);
+    margin:18px 0 6px;
+  }
+  input[type=text], input[type=tel], select{
+    width:100%; padding:13px 14px; background:var(--surface-2);
+    border:1px solid var(--border); border-radius:10px; color:var(--text);
+    font-size:16px; font-family:'Inter',sans-serif; outline:none;
+    transition:border-color .15s;
+  }
+  input:focus, select:focus{ border-color:var(--accent); }
+  select{ appearance:none; -webkit-appearance:none;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='%238b94a3' viewBox='0 0 20 20'><path d='M5 8l5 5 5-5z'/></svg>");
+    background-repeat:no-repeat; background-position:right 14px center;
+  }
+  .toggle-row{
+    display:flex; gap:10px; margin-top:6px;
+  }
+  .toggle-btn{
+    flex:1; padding:12px; text-align:center; border-radius:10px;
+    border:1px solid var(--border); background:var(--surface-2);
+    color:var(--text-muted); font-weight:600; cursor:pointer; font-size:14px;
+    transition:all .15s; user-select:none;
+  }
+  .toggle-btn.active{
+    border-color:var(--accent); background:rgba(255,176,32,.12); color:var(--accent);
+  }
+  button.submit{
+    width:100%; margin-top:28px; padding:15px; border:none; border-radius:10px;
+    background:var(--accent); color:#1a1200; font-weight:700; font-size:15px;
+    font-family:'Space Grotesk',sans-serif; letter-spacing:.01em; cursor:pointer;
+    transition:filter .15s;
+  }
+  button.submit:active{ filter:brightness(.92); }
+  button.submit:disabled{ opacity:.6; cursor:default; }
+  .msg{ margin-top:14px; font-size:13px; text-align:center; min-height:18px; }
+  .msg.ok{ color:#35c48f; }
+  .msg.err{ color:#ff5d5d; }
+  .success{
+    text-align:center; padding:20px 0;
+  }
+  .success .check{
+    width:56px; height:56px; border-radius:50%; background:rgba(53,196,143,.15);
+    display:flex; align-items:center; justify-content:center; margin:0 auto 16px;
+    font-size:28px; color:#35c48f;
+  }
+  .success h2{ font-family:'Space Grotesk',sans-serif; margin:0 0 6px; }
+  .success p{ color:var(--text-muted); font-size:14px; margin:0 0 22px; }
+  .success button{
+    width:100%; padding:13px; border-radius:10px; border:1px solid var(--border);
+    background:var(--surface-2); color:var(--text); font-weight:600; cursor:pointer;
+  }
+</style>
+</head>
+<body>
+
+<div class="card" id="card">
+  <div class="eyebrow">Club Pró+ · Captação</div>
+  <h1>Novo lead</h1>
+  <p class="sub">Preencha os dados de quem você acabou de abordar.</p>
+
+  <form id="leadForm">
+    <label for="nome">Nome</label>
+    <input type="text" id="nome" required placeholder="Nome completo">
+
+    <label for="telefone">Telefone</label>
+    <input type="tel" id="telefone" required placeholder="(12) 90000-0000">
+
+    <label for="placa">Placa do veículo</label>
+    <input type="text" id="placa" required placeholder="ABC1D23" style="text-transform:uppercase">
+
+    <label>Motorista de aplicativo?</label>
+    <div class="toggle-row">
+      <div class="toggle-btn" id="btnSim" onclick="setMotorista(true)">Sim</div>
+      <div class="toggle-btn active" id="btnNao" onclick="setMotorista(false)">Não</div>
+    </div>
+
+    <label for="captador">Captador</label>
+    <select id="captador" required>
+      <option value="" disabled selected>Carregando...</option>
+    </select>
+
+    <button type="submit" class="submit" id="btnSubmit">Enviar lead</button>
+    <div class="msg" id="msg"></div>
+  </form>
+
+  <div class="success" id="success" style="display:none">
+    <div class="check">✓</div>
+    <h2>Lead enviado</h2>
+    <p>Ele já está na coluna "Novo Lead" do funil.</p>
+    <button onclick="novoLead()">Cadastrar outro</button>
+  </div>
+</div>
+
+<script>
+  // ⚠️ Cole aqui a URL do seu Apps Script (a mesma usada no kanban.html)
+  const API_URL = 'https://script.google.com/macros/s/AKfycbz83BCElcYZsqG1MJzyGJVeEinqL2ACZKKJveGNVyh_XjiKlrvlEh0uyHCDagxfde6PEA/exec';
+
+  let motoristaApp = false;
+
+  function setMotorista(valor){
+    motoristaApp = valor;
+    document.getElementById('btnSim').classList.toggle('active', valor === true);
+    document.getElementById('btnNao').classList.toggle('active', valor === false);
+  }
+
+  async function carregarCaptadores(){
+    const select = document.getElementById('captador');
+    try{
+      const res = await fetch(`${API_URL}?action=captadores`);
+      const data = await res.json();
+      select.innerHTML = '<option value="" disabled selected>Selecione</option>';
+      (data.captadores || []).forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.nome; opt.textContent = c.nome;
+        select.appendChild(opt);
+      });
+      if(!data.captadores || data.captadores.length === 0){
+        select.innerHTML = '<option value="" disabled selected>Nenhum captador cadastrado</option>';
+      }
+    }catch(e){
+      select.innerHTML = '<option value="" disabled selected>Erro ao carregar</option>';
+    }
+  }
+
+  document.getElementById('leadForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('btnSubmit');
+    const msg = document.getElementById('msg');
+    btn.disabled = true; btn.textContent = 'Enviando...';
+    msg.textContent = ''; msg.className = 'msg';
+
+    const payload = {
+      action: 'novoLead',
+      nome: document.getElementById('nome').value.trim(),
+      telefone: document.getElementById('telefone').value.trim(),
+      placa: document.getElementById('placa').value.trim().toUpperCase(),
+      motoristaApp: motoristaApp,
+      captador: document.getElementById('captador').value
+    };
+
+    try{
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if(data.ok){
+        document.getElementById('leadForm').style.display = 'none';
+        document.getElementById('success').style.display = 'block';
+      } else {
+        msg.textContent = 'Erro ao enviar. Tente novamente.';
+        msg.className = 'msg err';
+      }
+    }catch(err){
+      msg.textContent = 'Sem conexão com a planilha. Confira a internet.';
+      msg.className = 'msg err';
+    }finally{
+      btn.disabled = false; btn.textContent = 'Enviar lead';
+    }
+  });
+
+  function novoLead(){
+    document.getElementById('leadForm').reset();
+    setMotorista(false);
+    document.getElementById('leadForm').style.display = 'block';
+    document.getElementById('success').style.display = 'none';
+  }
+
+  carregarCaptadores();
+</script>
+</body>
+</html>

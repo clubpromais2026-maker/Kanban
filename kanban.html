@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Funil de Captação · Club Pró+</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0f131a; --surface:#171d27; --surface-2:#1f2733; --surface-3:#232c39;
+    --accent:#ffb020; --accent-dark:#c9860a;
+    --green:#35c48f; --red:#ff5d5d; --blue:#5b9dff;
+    --border:#2a3340; --text:#eef1f5; --text-muted:#8b94a3;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:'Inter',sans-serif; min-height:100vh;
+  }
+  header{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:18px 24px; border-bottom:1px solid var(--border);
+    background:var(--surface); position:sticky; top:0; z-index:10;
+    flex-wrap:wrap; gap:12px;
+  }
+  .brand{ display:flex; align-items:center; gap:12px; }
+  .brand .dot{ width:10px; height:10px; border-radius:50%; background:var(--accent); }
+  h1{ font-family:'Space Grotesk',sans-serif; font-size:19px; margin:0; letter-spacing:-.01em; }
+  .header-actions{ display:flex; gap:10px; align-items:center; }
+  .btn{
+    padding:9px 16px; border-radius:9px; border:1px solid var(--border);
+    background:var(--surface-2); color:var(--text); font-weight:600; font-size:13px;
+    cursor:pointer; font-family:'Inter',sans-serif; transition:filter .15s;
+  }
+  .btn:hover{ filter:brightness(1.15); }
+  .btn.primary{ background:var(--accent); color:#1a1200; border:none; }
+
+  .board{
+    display:flex; gap:16px; padding:20px 24px 40px; overflow-x:auto;
+    align-items:flex-start;
+  }
+  .column{
+    flex:0 0 270px; background:var(--surface); border:1px solid var(--border);
+    border-radius:14px; display:flex; flex-direction:column; max-height:calc(100vh - 100px);
+  }
+  .column-head{
+    padding:14px 14px 12px; border-bottom:1px solid var(--border);
+  }
+  .column-title{
+    font-family:'Space Grotesk',sans-serif; font-size:14px; font-weight:600;
+    display:flex; align-items:center; gap:8px; margin-bottom:4px;
+  }
+  .column-title .bar{ width:4px; height:14px; border-radius:2px; }
+  .column-meta{ font-size:12px; color:var(--text-muted); }
+  .column-body{
+    padding:10px; overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:10px;
+    min-height:60px;
+  }
+  .column-body.dragover{ background:rgba(255,176,32,.06); }
+
+  .card{
+    background:var(--surface-2); border:1px solid var(--border); border-radius:11px;
+    padding:12px 12px 10px; cursor:grab;
+  }
+  .card:active{ cursor:grabbing; }
+  .card-name{ font-weight:700; font-size:14px; margin-bottom:6px; }
+  .card-row{
+    display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--text-muted);
+    margin-bottom:3px;
+  }
+  .badge{
+    display:inline-block; font-size:10.5px; font-weight:700; padding:2px 7px;
+    border-radius:20px; background:rgba(91,157,255,.15); color:var(--blue);
+    margin-top:6px;
+  }
+  .valor-wrap{
+    margin-top:8px; display:flex; align-items:center; gap:6px;
+  }
+  .valor-input{
+    width:100%; background:var(--surface-3); border:1px solid var(--border);
+    border-radius:7px; padding:6px 8px; color:var(--accent); font-weight:700;
+    font-size:13px; font-family:'Inter',sans-serif;
+  }
+  .move-select{
+    width:100%; margin-top:8px; background:var(--surface-3); border:1px solid var(--border);
+    border-radius:7px; padding:6px 8px; color:var(--text-muted); font-size:12px;
+  }
+  .empty-col{ color:var(--text-muted); font-size:12.5px; text-align:center; padding:20px 8px; }
+
+  /* Metas dos captadores */
+  .metas{
+    display:flex; gap:14px; padding:16px 24px; overflow-x:auto;
+    border-bottom:1px solid var(--border); background:var(--surface);
+  }
+  .meta-card{
+    flex:0 0 190px; background:var(--surface-2); border:1px solid var(--border);
+    border-radius:12px; padding:12px 14px;
+  }
+  .meta-name{ font-weight:700; font-size:13px; margin-bottom:8px; }
+  .meta-bar-track{
+    height:7px; border-radius:20px; background:var(--surface-3); overflow:hidden; margin-bottom:8px;
+  }
+  .meta-bar-fill{ height:100%; border-radius:20px; background:var(--accent); transition:width .25s; }
+  .meta-bar-fill.completo{ background:var(--green); }
+  .meta-foot{ display:flex; align-items:center; justify-content:space-between; font-size:12px; color:var(--text-muted); }
+  .meta-foot input{
+    width:44px; background:var(--surface-3); border:1px solid var(--border); border-radius:6px;
+    color:var(--text); font-size:12px; padding:3px 5px; text-align:center;
+  }
+  .venda-fechada{
+    margin-top:8px; background:rgba(53,196,143,.1); border:1px solid rgba(53,196,143,.35);
+    border-radius:8px; padding:8px 10px;
+  }
+  .venda-fechada .cap-nome{ font-size:12px; color:var(--green); font-weight:700; margin-bottom:6px; }
+  .venda-fechada label{
+    display:flex; align-items:center; gap:7px; font-size:12px; color:var(--text-muted); cursor:pointer;
+  }
+
+  .lembrete-alerta{
+    margin-top:8px; background:rgba(255,93,93,.12); border:1px solid rgba(255,93,93,.4);
+    border-radius:8px; padding:8px 10px;
+  }
+  .lembrete-alerta .titulo{ font-size:12px; font-weight:700; color:var(--red); margin-bottom:2px; }
+  .lembrete-alerta .motivo{ font-size:12px; color:var(--text); }
+  .lembrete-edit{
+    margin-top:8px; border-top:1px dashed var(--border); padding-top:8px;
+  }
+  .lembrete-edit summary{
+    font-size:11.5px; color:var(--text-muted); cursor:pointer; list-style:none; user-select:none;
+  }
+  .lembrete-edit summary::-webkit-details-marker{ display:none; }
+  .lembrete-edit summary::before{ content:'🔔 lembrete'; }
+  .lembrete-edit[open] summary::before{ content:'🔔 lembrete ▲'; }
+  .lembrete-fields{ display:flex; flex-direction:column; gap:6px; margin-top:8px; }
+  .lembrete-fields input{
+    background:var(--surface-3); border:1px solid var(--border); border-radius:7px;
+    padding:6px 8px; color:var(--text); font-size:12px; font-family:'Inter',sans-serif;
+  }
+  .lembrete-fields button{
+    background:var(--surface-3); border:1px solid var(--border); border-radius:7px;
+    padding:6px; color:var(--text-muted); font-size:11.5px; cursor:pointer; font-weight:600;
+  }
+
+  /* Modal captadores */
+  .overlay{
+    position:fixed; inset:0; background:rgba(0,0,0,.55); display:none;
+    align-items:center; justify-content:center; z-index:100; padding:20px;
+  }
+  .overlay.show{ display:flex; }
+  .modal{
+    background:var(--surface); border:1px solid var(--border); border-radius:14px;
+    width:100%; max-width:380px; padding:22px;
+  }
+  .modal h2{ font-family:'Space Grotesk',sans-serif; margin:0 0 4px; font-size:18px; }
+  .modal p{ color:var(--text-muted); font-size:13px; margin:0 0 16px; }
+  .cap-list{ display:flex; flex-direction:column; gap:8px; max-height:220px; overflow-y:auto; margin-bottom:16px; }
+  .cap-item{
+    display:flex; justify-content:space-between; align-items:center;
+    background:var(--surface-2); border:1px solid var(--border); border-radius:8px; padding:8px 10px;
+    font-size:13px;
+  }
+  .cap-item button{
+    background:none; border:none; color:var(--red); cursor:pointer; font-size:13px; font-weight:600;
+  }
+  .add-row{ display:flex; gap:8px; }
+  .add-row input{
+    flex:1; padding:10px 12px; background:var(--surface-2); border:1px solid var(--border);
+    border-radius:8px; color:var(--text); font-size:14px;
+  }
+  .close-modal{ width:100%; margin-top:16px; padding:11px; border-radius:8px; border:1px solid var(--border);
+    background:var(--surface-2); color:var(--text); font-weight:600; cursor:pointer; }
+  .loading{ padding:40px; text-align:center; color:var(--text-muted); }
+
+  /* Tela de senha */
+  .lock-screen{
+    position:fixed; inset:0; background:var(--bg); z-index:200;
+    display:flex; align-items:center; justify-content:center; padding:24px;
+  }
+  .lock-card{
+    width:100%; max-width:340px; background:var(--surface); border:1px solid var(--border);
+    border-radius:16px; padding:28px 24px; text-align:center;
+  }
+  .lock-card .icon{ font-size:30px; margin-bottom:10px; }
+  .lock-card h2{ font-family:'Space Grotesk',sans-serif; margin:0 0 4px; font-size:18px; }
+  .lock-card p{ color:var(--text-muted); font-size:13px; margin:0 0 18px; }
+  .lock-card input{
+    width:100%; padding:12px 14px; background:var(--surface-2); border:1px solid var(--border);
+    border-radius:9px; color:var(--text); font-size:15px; text-align:center; margin-bottom:12px;
+  }
+  .lock-card button{
+    width:100%; padding:12px; border:none; border-radius:9px; background:var(--accent);
+    color:#1a1200; font-weight:700; font-family:'Space Grotesk',sans-serif; cursor:pointer;
+  }
+  .lock-error{ color:var(--red); font-size:12.5px; margin-top:10px; min-height:16px; }
+</style>
+</head>
+<body>
+
+<div class="lock-screen" id="lockScreen">
+  <div class="lock-card">
+    <div class="icon">🔒</div>
+    <h2>Acesso ao Funil</h2>
+    <p>Digite a senha para ver os leads.</p>
+    <input type="password" id="lockInput" placeholder="Senha" autofocus>
+    <button onclick="verificarSenha()">Entrar</button>
+    <div class="lock-error" id="lockError"></div>
+  </div>
+</div>
+
+<header>
+  <div class="brand"><span class="dot"></span><h1>Funil de Captação</h1></div>
+  <div class="header-actions">
+    <button class="btn" onclick="abrirCaptadores()">Captadores</button>
+    <button class="btn" onclick="carregarLeads()">Atualizar</button>
+    <button class="btn primary" onclick="location.reload()">↻</button>
+  </div>
+</header>
+
+<div id="metas" class="metas"></div>
+
+<div id="board" class="board">
+  <div class="loading">Carregando leads...</div>
+</div>
+
+<div class="overlay" id="overlayCap">
+  <div class="modal">
+    <h2>Captadores</h2>
+    <p>Adicione ou remova quem aparece no formulário de captação.</p>
+    <div class="cap-list" id="capList"></div>
+    <div class="add-row">
+      <input type="text" id="novoCaptadorInput" placeholder="Nome do captador">
+      <input type="number" id="novaMetaInput" placeholder="Meta" min="0" style="max-width:70px">
+      <button class="btn primary" onclick="adicionarCaptador()">+</button>
+    </div>
+    <button class="close-modal" onclick="fecharCaptadores()">Fechar</button>
+  </div>
+</div>
+
+<script>
+  // ⚠️ Cole aqui a URL do seu Apps Script (a mesma usada no form.html)
+  const API_URL = 'https://script.google.com/macros/s/AKfycbz83BCElcYZsqG1MJzyGJVeEinqL2ACZKKJveGNVyh_XjiKlrvlEh0uyHCDagxfde6PEA/exec';
+
+  // ⚠️ Troque por uma senha só sua. Isso NÃO é uma segurança forte (é só
+  // JavaScript rodando no navegador), mas impede que quem só tenha o link
+  // do kanban veja os leads sem querer entrar.
+  const SENHA_KANBAN = '10727abc&';
+
+  function verificarSenha(){
+    const input = document.getElementById('lockInput');
+    const erro = document.getElementById('lockError');
+    if(input.value === SENHA_KANBAN){
+      sessionStorage.setItem('kanban_ok', '1');
+      document.getElementById('lockScreen').style.display = 'none';
+      carregarLeads();
+    } else {
+      erro.textContent = 'Senha incorreta.';
+      input.value = '';
+      input.focus();
+    }
+  }
+
+  document.getElementById('lockInput').addEventListener('keydown', (e) => {
+    if(e.key === 'Enter') verificarSenha();
+  });
+
+  if(sessionStorage.getItem('kanban_ok') === '1'){
+    document.getElementById('lockScreen').style.display = 'none';
+    carregarLeads();
+  }
+  // (se não estiver liberado, carregarLeads() só roda depois da senha certa)
+
+  const ETAPAS = [
+    { id:'Novo Lead',         cor:'#5b9dff' },
+    { id:'Entrou em Contato', cor:'#ffb020' },
+    { id:'Em Negociação',     cor:'#ff9d3d' },
+    { id:'Vistoria',          cor:'#c792ff' },
+    { id:'Ativo',             cor:'#35c48f' },
+    { id:'Não Fechou',        cor:'#ff5d5d' },
+  ];
+
+  let leads = [];
+  let captadoresData = [];
+  let draggingId = null;
+
+  async function carregarLeads(){
+    const board = document.getElementById('board');
+    try{
+      const [resLeads, resCap] = await Promise.all([
+        fetch(`${API_URL}?action=leads`),
+        fetch(`${API_URL}?action=captadores`)
+      ]);
+      const dataLeads = await resLeads.json();
+      const dataCap = await resCap.json();
+      leads = dataLeads.leads || [];
+      captadoresData = dataCap.captadores || [];
+      render();
+      renderMetas();
+    }catch(e){
+      board.innerHTML = '<div class="loading">Não foi possível carregar. Confira a URL do Apps Script e a internet.</div>';
+    }
+  }
+
+  function isHoje(dataStr){
+    if(!dataStr) return false;
+    const d = new Date(dataStr);
+    const hoje = new Date();
+    return d.getFullYear()===hoje.getFullYear() && d.getMonth()===hoje.getMonth() && d.getDate()===hoje.getDate();
+  }
+
+  function renderMetas(){
+    const wrap = document.getElementById('metas');
+    if(captadoresData.length === 0){
+      wrap.innerHTML = '';
+      return;
+    }
+    wrap.innerHTML = captadoresData.map(c => {
+      const capturadosHoje = leads.filter(l => l.Captador === c.nome && isHoje(l.DataCriacao)).length;
+      const meta = Number(c.meta) || 0;
+      const pct = meta > 0 ? Math.min(100, Math.round((capturadosHoje / meta) * 100)) : 0;
+      const completo = meta > 0 && capturadosHoje >= meta;
+      return `
+        <div class="meta-card">
+          <div class="meta-name">${escapeHtml(c.nome)}</div>
+          <div class="meta-bar-track"><div class="meta-bar-fill ${completo?'completo':''}" style="width:${pct}%"></div></div>
+          <div class="meta-foot">
+            <span>${capturadosHoje} / <input type="number" min="0" class="meta-input" data-nome="${escapeHtml(c.nome)}" value="${meta}"> hoje</span>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    wrap.querySelectorAll('.meta-input').forEach(inp => {
+      inp.addEventListener('change', (e) => atualizarMeta(e.target.dataset.nome, e.target.value));
+    });
+  }
+
+  async function atualizarMeta(nome, meta){
+    const c = captadoresData.find(c => c.nome === nome);
+    if(c) c.meta = Number(meta) || 0;
+    renderMetas();
+    try{
+      await fetch(API_URL, {
+        method:'POST',
+        headers:{'Content-Type':'text/plain;charset=utf-8'},
+        body: JSON.stringify({ action:'atualizarMeta', nome, meta: Number(meta) || 0 })
+      });
+    }catch(e){}
+  }
+
+  function render(){
+    const board = document.getElementById('board');
+    board.innerHTML = '';
+    ETAPAS.forEach(etapa => {
+      const doEtapa = leads.filter(l => l.Etapa === etapa.id);
+      const somaValor = doEtapa.reduce((s,l) => s + (parseFloat(l.ValorAdesao) || 0), 0);
+
+      const col = document.createElement('div');
+      col.className = 'column';
+      col.innerHTML = `
+        <div class="column-head">
+          <div class="column-title"><span class="bar" style="background:${etapa.cor}"></span>${etapa.id}</div>
+          <div class="column-meta">${doEtapa.length} lead${doEtapa.length!==1?'s':''}${somaValor>0 ? ' · R$ '+somaValor.toLocaleString('pt-BR',{minimumFractionDigits:2}) : ''}</div>
+        </div>
+        <div class="column-body" data-etapa="${etapa.id}"></div>
+      `;
+      const body = col.querySelector('.column-body');
+
+      if(doEtapa.length === 0){
+        body.innerHTML = '<div class="empty-col">Sem leads aqui</div>';
+      } else {
+        doEtapa.forEach(l => body.appendChild(criarCard(l)));
+      }
+
+      body.addEventListener('dragover', e => { e.preventDefault(); body.classList.add('dragover'); });
+      body.addEventListener('dragleave', () => body.classList.remove('dragover'));
+      body.addEventListener('drop', e => {
+        e.preventDefault(); body.classList.remove('dragover');
+        if(draggingId) moverLead(draggingId, etapa.id);
+      });
+
+      board.appendChild(col);
+    });
+  }
+
+  function criarCard(l){
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.draggable = true;
+    card.addEventListener('dragstart', () => { draggingId = l.ID; });
+    card.addEventListener('dragend', () => { draggingId = null; });
+
+    const selectOpts = ETAPAS.map(e => `<option value="${e.id}" ${e.id===l.Etapa?'selected':''}>${e.id}</option>`).join('');
+
+    card.innerHTML = `
+      <div class="card-name">${escapeHtml(l.Nome || '(sem nome)')}</div>
+      <div class="card-row">📞 ${escapeHtml(l.Telefone || '-')}</div>
+      <div class="card-row">🚗 ${escapeHtml(l.Placa || '-')}</div>
+      <div class="card-row">👤 ${escapeHtml(l.Captador || '-')}</div>
+      ${l.MotoristaApp === 'Sim' ? '<span class="badge">Motorista de app</span>' : ''}
+      <div class="valor-wrap">
+        <input class="valor-input" type="number" step="0.01" placeholder="Valor da adesão"
+          value="${l.ValorAdesao || ''}" data-id="${l.ID}">
+      </div>
+      ${l.Etapa === 'Ativo' ? `
+        <div class="venda-fechada">
+          <div class="cap-nome">✓ Venda fechada · captador: ${escapeHtml(l.Captador || '-')}</div>
+          <label>
+            <input type="checkbox" class="bonus-check" data-id="${l.ID}" ${l.BonusPago === 'Sim' ? 'checked' : ''}>
+            Bônus de R$ 5 pago ao captador
+          </label>
+        </div>
+      ` : ''}
+      ${lembretePendente(l) ? `
+        <div class="lembrete-alerta">
+          <div class="titulo">🔔 Ligar para ${escapeHtml(l.Nome || 'esse lead')}</div>
+          <div class="motivo">${escapeHtml(l.LembreteMotivo || 'Lembrete sem motivo definido')} · ${formatarData(l.LembreteData)}</div>
+        </div>
+      ` : ''}
+      <details class="lembrete-edit">
+        <summary></summary>
+        <div class="lembrete-fields">
+          <input type="date" class="lembrete-data" data-id="${l.ID}" value="${l.LembreteData || ''}">
+          <input type="text" class="lembrete-motivo" data-id="${l.ID}" placeholder="Motivo (ex: cliente pediu pra ligar semana que vem)" value="${escapeHtml(l.LembreteMotivo || '')}">
+          <button class="salvar-lembrete" data-id="${l.ID}">Salvar lembrete</button>
+        </div>
+      </details>
+      <select class="move-select" data-id="${l.ID}">${selectOpts}</select>
+    `;
+
+    card.querySelector('.valor-input').addEventListener('change', (e) => {
+      atualizarValor(l.ID, e.target.value);
+    });
+    card.querySelector('.move-select').addEventListener('change', (e) => {
+      moverLead(l.ID, e.target.value);
+    });
+    const bonusCheck = card.querySelector('.bonus-check');
+    if(bonusCheck){
+      bonusCheck.addEventListener('change', (e) => {
+        atualizarBonus(l.ID, e.target.checked);
+      });
+    }
+    card.querySelector('.salvar-lembrete').addEventListener('click', () => {
+      const data = card.querySelector('.lembrete-data').value;
+      const motivo = card.querySelector('.lembrete-motivo').value;
+      atualizarLembrete(l.ID, data, motivo);
+    });
+
+    return card;
+  }
+
+  async function moverLead(id, novaEtapa){
+    const lead = leads.find(l => l.ID === id);
+    if(lead) lead.Etapa = novaEtapa;
+    render();
+    try{
+      await fetch(API_URL, {
+        method:'POST',
+        headers:{'Content-Type':'text/plain;charset=utf-8'},
+        body: JSON.stringify({ action:'atualizarEtapa', id, etapa: novaEtapa })
+      });
+    }catch(e){ /* mantém otimista; próxima atualização corrige se falhar */ }
+  }
+
+  async function atualizarValor(id, valor){
+    try{
+      await fetch(API_URL, {
+        method:'POST',
+        headers:{'Content-Type':'text/plain;charset=utf-8'},
+        body: JSON.stringify({ action:'atualizarValor', id, valor: parseFloat(valor) || 0 })
+      });
+      const lead = leads.find(l => l.ID === id);
+      if(lead) lead.ValorAdesao = valor;
+      render();
+    }catch(e){}
+  }
+
+  async function atualizarBonus(id, pago){
+    const lead = leads.find(l => l.ID === id);
+    if(lead) lead.BonusPago = pago ? 'Sim' : 'Não';
+    try{
+      await fetch(API_URL, {
+        method:'POST',
+        headers:{'Content-Type':'text/plain;charset=utf-8'},
+        body: JSON.stringify({ action:'atualizarBonus', id, pago })
+      });
+    }catch(e){}
+  }
+
+  function lembretePendente(l){
+    if(!l.LembreteData) return false;
+    const hoje = new Date(); hoje.setHours(0,0,0,0);
+    const data = new Date(l.LembreteData + 'T00:00:00');
+    return data <= hoje;
+  }
+
+  function formatarData(dataStr){
+    if(!dataStr) return '';
+    const [ano, mes, dia] = dataStr.split('-');
+    return `${dia}/${mes}/${ano}`;
+  }
+
+  async function atualizarLembrete(id, data, motivo){
+    const lead = leads.find(l => l.ID === id);
+    if(lead){ lead.LembreteData = data; lead.LembreteMotivo = motivo; }
+    render();
+    try{
+      await fetch(API_URL, {
+        method:'POST',
+        headers:{'Content-Type':'text/plain;charset=utf-8'},
+        body: JSON.stringify({ action:'atualizarLembrete', id, data, motivo })
+      });
+    }catch(e){}
+  }
+
+  function escapeHtml(str){
+    return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  }
+
+  // ---------- Captadores ----------
+
+  async function abrirCaptadores(){
+    document.getElementById('overlayCap').classList.add('show');
+    const lista = document.getElementById('capList');
+    lista.innerHTML = '<div class="loading">Carregando...</div>';
+    try{
+      const res = await fetch(`${API_URL}?action=captadores`);
+      const data = await res.json();
+      captadoresData = data.captadores || [];
+      renderCaptadores(captadoresData);
+    }catch(e){
+      lista.innerHTML = '<div class="loading">Erro ao carregar</div>';
+    }
+  }
+
+  function renderCaptadores(captadores){
+    const lista = document.getElementById('capList');
+    if(captadores.length === 0){
+      lista.innerHTML = '<div class="loading">Nenhum captador ainda</div>';
+      return;
+    }
+    lista.innerHTML = captadores.map(c => `
+      <div class="cap-item">
+        <span>${escapeHtml(c.nome)} <span style="color:var(--text-muted)">· meta ${c.meta}</span></span>
+        <button onclick="removerCaptador('${c.nome.replace(/'/g,"\\'")}')">remover</button>
+      </div>
+    `).join('');
+  }
+
+  async function adicionarCaptador(){
+    const input = document.getElementById('novoCaptadorInput');
+    const metaInput = document.getElementById('novaMetaInput');
+    const nome = input.value.trim();
+    const meta = Number(metaInput.value) || 0;
+    if(!nome) return;
+    input.value = ''; metaInput.value = '';
+    await fetch(API_URL, {
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({ action:'addCaptador', nome, meta })
+    });
+    abrirCaptadores();
+    carregarLeads();
+  }
+
+  async function removerCaptador(nome){
+    await fetch(API_URL, {
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({ action:'removeCaptador', nome })
+    });
+    abrirCaptadores();
+    carregarLeads();
+  }
+
+  function fecharCaptadores(){
+    document.getElementById('overlayCap').classList.remove('show');
+  }
+</script>
+</body>
+</html>
