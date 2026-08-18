@@ -244,7 +244,7 @@
   // ⚠️ Troque por uma senha só sua. Isso NÃO é uma segurança forte (é só
   // JavaScript rodando no navegador), mas impede que quem só tenha o link
   // do kanban veja os leads sem querer entrar.
-  const SENHA_KANBAN = '10727abc&';
+  const SENHA_KANBAN = '10727Abc&';
 
   function verificarSenha(){
     const input = document.getElementById('lockInput');
@@ -342,6 +342,7 @@
     try{
       await fetch(API_URL, {
         method:'POST',
+        mode:'no-cors',
         headers:{'Content-Type':'text/plain;charset=utf-8'},
         body: JSON.stringify({ action:'atualizarMeta', nome, meta: Number(meta) || 0 })
       });
@@ -456,6 +457,7 @@
     try{
       await fetch(API_URL, {
         method:'POST',
+        mode:'no-cors',
         headers:{'Content-Type':'text/plain;charset=utf-8'},
         body: JSON.stringify({ action:'atualizarEtapa', id, etapa: novaEtapa })
       });
@@ -466,6 +468,7 @@
     try{
       await fetch(API_URL, {
         method:'POST',
+        mode:'no-cors',
         headers:{'Content-Type':'text/plain;charset=utf-8'},
         body: JSON.stringify({ action:'atualizarValor', id, valor: parseFloat(valor) || 0 })
       });
@@ -481,6 +484,7 @@
     try{
       await fetch(API_URL, {
         method:'POST',
+        mode:'no-cors',
         headers:{'Content-Type':'text/plain;charset=utf-8'},
         body: JSON.stringify({ action:'atualizarBonus', id, pago })
       });
@@ -507,6 +511,7 @@
     try{
       await fetch(API_URL, {
         method:'POST',
+        mode:'no-cors',
         headers:{'Content-Type':'text/plain;charset=utf-8'},
         body: JSON.stringify({ action:'atualizarLembrete', id, data, motivo })
       });
@@ -556,6 +561,7 @@
     input.value = ''; metaInput.value = '';
     await fetch(API_URL, {
       method:'POST',
+        mode:'no-cors',
       headers:{'Content-Type':'text/plain;charset=utf-8'},
       body: JSON.stringify({ action:'addCaptador', nome, meta })
     });
@@ -566,6 +572,7 @@
   async function removerCaptador(nome){
     await fetch(API_URL, {
       method:'POST',
+        mode:'no-cors',
       headers:{'Content-Type':'text/plain;charset=utf-8'},
       body: JSON.stringify({ action:'removeCaptador', nome })
     });
